@@ -1,4 +1,4 @@
-package com.dronesserviceapi.models.responses.requests;
+package com.dronesserviceapi.models.requests;
 
 import javax.validation.constraints.NotBlank;
 

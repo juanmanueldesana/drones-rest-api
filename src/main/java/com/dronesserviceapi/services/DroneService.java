@@ -5,6 +5,8 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,22 +17,21 @@ import com.dronesserviceapi.entities.MedicationEntity;
 import com.dronesserviceapi.enums.Model;
 import com.dronesserviceapi.enums.State;
 import com.dronesserviceapi.interfaces.DroneInterface;
+import com.dronesserviceapi.models.requests.DroneRegisterRequest;
+import com.dronesserviceapi.models.requests.LoadDroneRequest;
 import com.dronesserviceapi.models.responses.AvailableDroneRest;
 import com.dronesserviceapi.models.responses.DeliverDroneRest;
 import com.dronesserviceapi.models.responses.DroneBatteryDetailsRest;
 import com.dronesserviceapi.models.responses.DroneMedicationLoadRest;
 import com.dronesserviceapi.models.responses.LoadDroneRest;
 import com.dronesserviceapi.models.responses.RegisterDroneRest;
-import com.dronesserviceapi.models.responses.requests.DroneDeliveryRequest;
-import com.dronesserviceapi.models.responses.requests.DroneGetBatteryRequest;
-import com.dronesserviceapi.models.responses.requests.DroneRegisterRequest;
-import com.dronesserviceapi.models.responses.requests.LoadDroneRequest;
 import com.dronesserviceapi.repositories.DroneDeliveryRepository;
 import com.dronesserviceapi.repositories.DroneRepository;
 import com.dronesserviceapi.repositories.LoadDroneRepository;
 import com.dronesserviceapi.repositories.MedicationRepository;
 
 @Service
+@Transactional
 public class DroneService implements DroneInterface {
 
     @Autowired
@@ -104,10 +105,10 @@ public class DroneService implements DroneInterface {
     }
 
     @Override
-    public DroneBatteryDetailsRest getBatteryLevel(DroneGetBatteryRequest drone) {
+    public DroneBatteryDetailsRest getBatteryLevel(String serialNumber) {
 
         DecimalFormat df = new DecimalFormat("#%");
-        DroneEntity droneEntity = droneRepository.findBySerialNumber(drone.getSerialNumber());
+        DroneEntity droneEntity = droneRepository.findBySerialNumber(serialNumber);
         if (droneEntity == null) {
             throw new RuntimeException("Drone not found");
         }
@@ -143,7 +144,7 @@ public class DroneService implements DroneInterface {
     @Override
     public AvailableDroneRest getAvailableDrones() {
 
-        List<DroneEntity> availableDrones = droneRepository.findAllByState(State.IDLE.toString());
+        List<DroneEntity> availableDrones = droneRepository.findAllByState(State.IDLE);
         return new AvailableDroneRest(State.IDLE.toString(), LocalDateTime.now(), availableDrones);
 
     }
@@ -151,38 +152,23 @@ public class DroneService implements DroneInterface {
     @Override
     public LoadDroneRest loadDrone(LoadDroneRequest loadDroneRequest) {
 
-        MedicationEntity medication1 = new MedicationEntity("WE232344", "Covax", 100.00, "sade23Rd");
-        MedicationEntity medication2 = new MedicationEntity("WE232345", "Meloxicam", 150.00, "sade2Y4d");
-        MedicationEntity medication3 = new MedicationEntity("WE232346", "Metformin", 200.00, "sade2U4d");
-        MedicationEntity medication4 = new MedicationEntity("WE232347", "Acetaminophen", 300.00, "sade2Q4d");
-        MedicationEntity medication5 = new MedicationEntity("WE232348", "Amoxicillin", 400.00, "sa3e234d");
-        MedicationEntity medication6 = new MedicationEntity("WE232349", "Ativan", 260.00, "sade237d");
-        MedicationEntity medication7 = new MedicationEntity("WE2323510", "Atorvastatin", 180.00, "sade2F4d");
-        MedicationEntity medication8 = new MedicationEntity("WE2323511", "Azithromycin", 400.00, "sade2B4d");
-        MedicationEntity medication9 = new MedicationEntity("WE2323512", "Zyloprim", 400.00, "sadeH34d");
-        MedicationEntity medication10 = new MedicationEntity("WE2323513", "Diprolene ", 400.00, "sade234J");
-        medicationRepository.save(medication1);
-        medicationRepository.save(medication2);
-        medicationRepository.save(medication3);
-        medicationRepository.save(medication4);
-        medicationRepository.save(medication5);
-        medicationRepository.save(medication6);
-        medicationRepository.save(medication7);
-        medicationRepository.save(medication8);
-        medicationRepository.save(medication9);
-        medicationRepository.save(medication10);
+        List<MedicationEntity> medicationEntities = medicationRepository.findAll();
 
-        droneRepository.setUpdateState(State.LOADING.toString(), loadDroneRequest.getSerialNumber());
+        if (medicationEntities.isEmpty()) {
+            preLoadData();
+        }
+
         DroneEntity drone = droneRepository.findBySerialNumber(loadDroneRequest.getSerialNumber());
+
+        drone.setState(State.LOADING);
+
+        droneRepository.save(drone);
+
         MedicationEntity medication = medicationRepository.findByCode(loadDroneRequest.getCode());
         LoadMedicationEntity checkLoad = loadDroneRepository.findByCode(loadDroneRequest.getCode());
 
         if (checkLoad != null) {
             throw new RuntimeException("Medication code has already been loaded, try another code");
-        }
-
-        if (drone == null) {
-            throw new RuntimeException("Drone specified does not exist");
         }
 
         if (medication == null) {
@@ -204,7 +190,9 @@ public class DroneService implements DroneInterface {
         loadMedication.setDestination(loadDroneRequest.getDestination());
         loadMedication.setCreationDate(LocalDateTime.now());
         loadDroneRepository.save(loadMedication);
-        droneRepository.setUpdateState(State.LOADED.toString(), loadDroneRequest.getSerialNumber());
+
+        drone.setState(State.LOADED);
+        droneRepository.save(drone);
 
         LoadDroneRest loadDroneRest = new LoadDroneRest();
         loadDroneRest.setResult("success");
@@ -217,10 +205,13 @@ public class DroneService implements DroneInterface {
     }
 
     @Override
-    public DeliverDroneRest deliverLoad(DroneDeliveryRequest droneDeliveryRequest) {
+    public DeliverDroneRest deliverLoad(String serialNumber) {
 
-        droneRepository.setUpdateState(State.DELIVERING.toString(), droneDeliveryRequest.getSerialNumber());
-        LoadMedicationEntity loadMedication = loadDroneRepository.findByDrone(droneDeliveryRequest.getSerialNumber());
+        DroneEntity drone = droneRepository.findBySerialNumber(serialNumber);
+        drone.setState(State.DELIVERING);
+        droneRepository.save(drone);
+
+        LoadMedicationEntity loadMedication = loadDroneRepository.findByDrone(serialNumber);
 
         if (loadMedication == null) {
             throw new RuntimeException("Drone specified is not loaded or does not exist");
@@ -230,11 +221,13 @@ public class DroneService implements DroneInterface {
         medicalDelivery.setLoadMedication(loadMedication);
         medicalDelivery.setDeliveryTime(LocalDateTime.now());
         droneDeliveryRepository.save(medicalDelivery);
-        droneRepository.setUpdateState(State.DELIVERED.toString(), droneDeliveryRequest.getSerialNumber());
+
+        drone.setState(State.DELIVERED);
+        droneRepository.save(drone);
 
         DeliverDroneRest deliverDroneRest = new DeliverDroneRest();
         deliverDroneRest.setResult("success");
-        deliverDroneRest.setSerialNumber(droneDeliveryRequest.getSerialNumber());
+        deliverDroneRest.setSerialNumber(serialNumber);
         deliverDroneRest.setMessage("Delivery completed successfully");
         deliverDroneRest.setTimestamp(LocalDateTime.now());
 

@@ -15,16 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dronesserviceapi.interfaces.DroneInterface;
+import com.dronesserviceapi.models.requests.DroneRegisterRequest;
+import com.dronesserviceapi.models.requests.LoadDroneRequest;
 import com.dronesserviceapi.models.responses.AvailableDroneRest;
 import com.dronesserviceapi.models.responses.DeliverDroneRest;
 import com.dronesserviceapi.models.responses.DroneBatteryDetailsRest;
 import com.dronesserviceapi.models.responses.DroneMedicationLoadRest;
 import com.dronesserviceapi.models.responses.LoadDroneRest;
 import com.dronesserviceapi.models.responses.RegisterDroneRest;
-import com.dronesserviceapi.models.responses.requests.DroneDeliveryRequest;
-import com.dronesserviceapi.models.responses.requests.DroneGetBatteryRequest;
-import com.dronesserviceapi.models.responses.requests.DroneRegisterRequest;
-import com.dronesserviceapi.models.responses.requests.LoadDroneRequest;
 
 @RestController
 @RequestMapping("/api/drones")
@@ -47,11 +45,11 @@ public class DroneController {
         return new ResponseEntity<AvailableDroneRest>(availableDrones, HttpStatus.OK);
     }
 
-    @PostMapping("/battery")
+    @GetMapping("/battery/{serialNumber}")
     public ResponseEntity<DroneBatteryDetailsRest> checkDroneBattery(
-            @NotNull @RequestBody(required = true) DroneGetBatteryRequest droneRequest) {
+            @PathVariable String serialNumber) {
 
-        DroneBatteryDetailsRest droneBatteryDetails = droneService.getBatteryLevel(droneRequest);
+        DroneBatteryDetailsRest droneBatteryDetails = droneService.getBatteryLevel(serialNumber);
         return new ResponseEntity<DroneBatteryDetailsRest>(droneBatteryDetails, HttpStatus.OK);
 
     }
@@ -69,10 +67,10 @@ public class DroneController {
         return new ResponseEntity<DroneMedicationLoadRest>(droneMedicationLoadRest, HttpStatus.OK);
     }
 
-    @PostMapping("/deliver")
+    @GetMapping("/deliver/{serialNumber}")
     public ResponseEntity<DeliverDroneRest> deliverMedication(
-            @NotNull @RequestBody DroneDeliveryRequest deliveryRequest) {
-        DeliverDroneRest deliverDroneRest = droneService.deliverLoad(deliveryRequest);
+        @PathVariable String serialNumber) {
+        DeliverDroneRest deliverDroneRest = droneService.deliverLoad(serialNumber);
         return new ResponseEntity<DeliverDroneRest>(deliverDroneRest, HttpStatus.OK);
     }
 
