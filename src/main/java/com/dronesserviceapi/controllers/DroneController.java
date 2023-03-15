@@ -75,4 +75,10 @@ public class DroneController {
         DeliverDroneRest deliverDroneRest = droneService.deliverLoad(deliveryRequest);
         return new ResponseEntity<DeliverDroneRest>(deliverDroneRest, HttpStatus.OK);
     }
+
+    @GetMapping("/preload-data")
+    public ResponseEntity<String> preloadData() {
+        droneService.preLoadData();
+        return new ResponseEntity<String>("Preloaded data", HttpStatus.OK);
+    }
 }
