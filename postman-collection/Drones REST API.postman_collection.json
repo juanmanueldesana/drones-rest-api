@@ -1,0 +1,208 @@
+{
+	"info": {
+		"_postman_id": "a2b42eea-99e5-42e9-96cc-70f674d74aa0",
+		"name": "Drones REST API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15656262"
+	},
+	"item": [
+		{
+			"name": "Drones",
+			"item": [
+				{
+					"name": "Register Drone",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"serialNumber\":\"Q88885GD\",\r\n    \"model\":\"MIDDLEWEIGHT\",\r\n    \"weightLimit\":450.00,\r\n    \"battery\":0.95,\r\n    \"state\":\"IDLE\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/drones/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"drones",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Available Drones",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/drones/available",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"drones",
+								"available"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Drone Battery",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/drones/battery/Q23445GD",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"drones",
+								"battery",
+								"Q23445GD"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Medications",
+			"item": [
+				{
+					"name": "Initialize Medications Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/drones/preload-data",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"drones",
+								"preload-data"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Load Medication",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"serialNumber\":\"Q23445GD\",\r\n    \"code\":\"WE232344\",\r\n    \"source\":\"Rosario\",\r\n    \"destination\":\"Santa Fe\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/drones/load",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"drones",
+								"load"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Loaded Medication",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/drones/details/Q23445GD",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"drones",
+								"details",
+								"Q23445GD"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deliver Loaded Medication",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/drones/deliver/Q23445GD",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"drones",
+								"deliver",
+								"Q23445GD"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
