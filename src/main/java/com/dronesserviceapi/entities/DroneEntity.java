@@ -11,10 +11,14 @@ import javax.persistence.Id;
 import com.dronesserviceapi.enums.Model;
 import com.dronesserviceapi.enums.State;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity(name = "drones")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class DroneEntity {
 
     @Id
